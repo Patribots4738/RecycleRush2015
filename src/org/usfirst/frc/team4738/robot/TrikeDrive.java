@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.*;
  */
 public class TrikeDrive implements SideCarConstants {
 
-	CANTalon leftMotor, rightMotor;
+	Talon leftMotor, rightMotor;
 	Joystick leftStick, rightStick;
 	/**
 	 * Robot control for the 2015 Recycle Rush Robot
@@ -19,8 +19,8 @@ public class TrikeDrive implements SideCarConstants {
 	 */
 	TrikeDrive(int leftMotor, int rightMotor, Joystick leftStick, Joystick rightStick) {
 
-		this.leftMotor = new CANTalon(CAN_ID[leftMotor]);
-		this.rightMotor = new CANTalon(CAN_ID[rightMotor]);
+		this.leftMotor = new Talon(PWM_PORT[leftMotor]);
+		this.rightMotor = new Talon(PWM_PORT[rightMotor]);
 		this.leftStick = leftStick;
 		this.rightStick = rightStick;
 
@@ -77,5 +77,5 @@ public class TrikeDrive implements SideCarConstants {
 	public void setDeadZone(float deadzone) {
 		DEAD_ZONE = deadzone;
 	}
-
+	
 }

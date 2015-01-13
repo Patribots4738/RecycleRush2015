@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.CounterBase.EncodingType;
  */
 public class Elevator implements SideCarConstants {
 	
-	CANTalon elevator;
+	Talon elevator;
 	Trike trike;
 	Encoder elevatorEncoder = new Encoder(DIO_PORT[6], DIO_PORT[7], true, EncodingType.k1X);
 
@@ -21,7 +21,7 @@ public class Elevator implements SideCarConstants {
 	
 	
 	public Elevator(int port, Trike trike) {
-		elevator= new CANTalon(port);
+		elevator= new Talon(port);
 		this.trike = trike;
 	}
 

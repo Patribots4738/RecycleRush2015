@@ -1,10 +1,8 @@
 package org.usfirst.frc.team4738.robot;
 
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -15,28 +13,19 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
  */
 public class Robot extends IterativeRobot implements SideCarConstants {
 
+	
 	Trike trike = new Trike();
 
 	Joystick leftStick = new Joystick(DRIVER_STATION_PORT[0]);
 	Joystick rightStick = new Joystick(DRIVER_STATION_PORT[1]);
 
-	Joystick xbox = new Joystick(DRIVER_STATION_PORT[2]);
-
-	ControlBoard controlBoard = new ControlBoard(DRIVER_STATION_PORT[3], 10);
-
-	// declare xbox "a" button
-	JoystickButton aButton = new JoystickButton(xbox, XboxButton.a.ordinal());
-
-	// declare xbox "x" button
-	JoystickButton bButton = new JoystickButton(xbox, XboxButton.b.ordinal());
-
-	JoystickButton xButton = new JoystickButton(xbox, XboxButton.x.ordinal());
-
-	JoystickButton yButton = new JoystickButton(xbox, XboxButton.y.ordinal());
+	
+	
+	ControlBoard controlBoard = new ControlBoard(DRIVER_STATION_PORT[2], 10);
 
 	TrikeDrive trikeDrive = new TrikeDrive(1, 2, leftStick, rightStick);
 
-	Elevator elevator = new Elevator(PWM_PORT[2], trike);
+	Elevator elevator = new Elevator(PWM_PORT[3], trike);
 
 	boolean isOpen = true;
 
@@ -48,9 +37,11 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 
 		elevator.initEncoder();
 
-		if (trike.arm.get()) {
+		
+		//TODO: LIMIT SWITCH CONTROLS THIS
+		/*if (trike.arm.get()) {
 			trike.arm.set(false);
-		}
+		}*/
 
 	}
 
@@ -77,15 +68,16 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	 * Opens or closes the arm each time the X button is pressed
 	 */
 	void armControl() {
-		if (xButton.get()) {
+		if (controlBoard.getBoardButton(5).get()) {
 			if (isOpen) {
-				trike.arm.set(false);
+			setArm(true);
 			} else {
-				trike.arm.set(true);
-
+			
+			setArm(false);
 			}
 			isOpen = !isOpen;
 		}
+		
 
 	}
 
@@ -94,8 +86,49 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	 */
 	public void autonomousPeriodic() {
 
+		int distance =1;
+		
+		setArm(true);
+		trikeDrive.moveAuto(2);
+		setArm(false);
+		trikeDrive.moveAuto(distance);
+		setArm(true);
+		trikeDrive.moveAuto(-8);
+		trikeDrive.turn180();
+		trikeDrive.moveAuto(distance-8);
+		trikeDrive.turn90Right();
+		trikeDrive.moveAuto(3);
+		setArm(false);
+		trikeDrive.turn90Right();
+		trikeDrive.moveAuto(distance);
+		setArm(true);
+
+		
 	}
 
+	
+	void setArm(boolean state){
+		try {
+
+		if(state){
+			trike.arm.set(Value.kReverse);
+			wait((long) .5f);
+			trike.arm.set(Value.kOff);
+		}else{
+			trike.arm.set(Value.kForward);
+			
+			wait((long) .5f);
+		
+		trike.arm.set(Value.kOff);
+		}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
 	/**
 	 * This function is called periodically during test mode
 	 */

@@ -1,7 +1,9 @@
 package org.usfirst.frc.team4738.robot;
 
-import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Encoder;
 
 /**
  * @author PatriBots4738
@@ -10,7 +12,7 @@ import edu.wpi.first.wpilibj.CounterBase.EncodingType;
  */
 public class Trike implements SideCarConstants {
 
-	Solenoid arm = new Solenoid(PCM_PORT[0]);
+	DoubleSolenoid arm = new DoubleSolenoid(PCM_PORT[0],PCM_PORT[1]);
 
 	DigitalInput elevatorTop = new DigitalInput(DIO_PORT[0]);
 	DigitalInput elevatorBottom = new DigitalInput(DIO_PORT[1]);

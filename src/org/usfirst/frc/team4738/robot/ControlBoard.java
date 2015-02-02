@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 public class ControlBoard extends Joystick {
 
 	private JoystickButton[] buttons;
+	boolean isPressed[];
 
 	public ControlBoard(int port, int buttonCount) {
 		super(port);

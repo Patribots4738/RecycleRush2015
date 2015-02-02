@@ -41,15 +41,15 @@ public class TrikeDrive implements SideCarConstants {
 	 */
 	public void player() {
 
-		if (Math.abs(leftStick.getAxis(Joystick.AxisType.kX)) <= DEAD_ZONE) {
-			leftMotor.set(leftStick.getAxis(Joystick.AxisType.kX));
+		if (Math.abs(leftStick.getY()) >= DEAD_ZONE) {
+			leftMotor.set(-leftStick.getY());
 		} else {
 			leftMotor.set(0);
 
 		}
 
-		if (Math.abs(rightStick.getAxis(Joystick.AxisType.kX)) <= DEAD_ZONE) {
-			rightMotor.set(rightStick.getAxis(Joystick.AxisType.kX));
+		if (Math.abs(rightStick.getY()) >= DEAD_ZONE) {
+			rightMotor.set(-rightStick.getY());
 		} else {
 			rightMotor.set(0);
 

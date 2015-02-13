@@ -2,11 +2,11 @@ package org.usfirst.frc.team4738.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.CameraServer;;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -23,12 +23,11 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	Joystick rightStick = new Joystick(DRIVER_STATION_PORT[1]);
 	ControlBoard controlBoard = new ControlBoard(DRIVER_STATION_PORT[2], 10);
 
-	
-	TrikeDrive trikeDrive = new TrikeDrive(PWM_PORT[0], PWM_PORT[1], leftStick,
+	TrikeDrive trikeDrive = new TrikeDrive(PWM_PORT[1], PWM_PORT[2], leftStick,
 			rightStick);
 
-	Elevator elevator = new Elevator(PWM_PORT[2], trike);
-	
+	Elevator elevator = new Elevator(PWM_PORT[0], trike);
+
 	boolean isOpen = true;
 
 	/**
@@ -36,14 +35,21 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	 * used for any initialization code.
 	 */
 	Camera camera;
+
 	public void robotInit() {
 
 		controlBoard.setOutputs(0);
-		
-	
-			camera = new Camera();
 
-				//elevator.initEncoder();
+		camera = new Camera();
+		
+		trikeDrive.setDeadZone(0.1f);
+		
+		SmartDashboard.putBoolean("Reset encoders", false);
+		SmartDashboard.putNumber("Set Speed", 1f);
+		
+		trikeDrive.resetEncoders();
+		
+		// elevator.initEncoder();
 
 		// TODO: LIMIT SWITCH CONTROLS THIS
 		/*
@@ -52,47 +58,28 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 
 	}
 
-	
 	DigitalInput limitSwtich = new DigitalInput(DIO_PORT[8]);
 	
 	/**
 	 * This function is called periodically during operator control
 	 */
-	public void teleopPeriodic() {
-		trikeDrive.player();
+	public void teleopPeriodic() 
+	{
+		
+		
+
+		trikeDrive.writeEncoderData();
+		trikeDrive.threeStepSpeedController(0.25f, 0.5f, 0.75f);
 		// elevatorControl();
 		// elevator.Update();
+		if(SmartDashboard.getBoolean("Reset encoders"))
+			trikeDrive.resetEncoders();
 		armControl();
 
-		if(limitSwtich.get())
-		{
-			controlBoard.setOutput(1, false);
-			controlBoard.setOutput(2, false);
-			controlBoard.setOutput(3, false);
-			controlBoard.setOutput(4, false);
-			controlBoard.setOutput(5, false);
-			controlBoard.setOutput(6, false);
-			controlBoard.setOutput(7, false);
-			controlBoard.setOutput(8, false);
-			controlBoard.setOutput(9, false);
-			controlBoard.setOutput(10, false);
-			controlBoard.setOutput(11, false);
-			controlBoard.setOutput(12, false);
-		}
-		else
-		{
-			controlBoard.setOutput(1, true);
-			controlBoard.setOutput(2, true);
-			controlBoard.setOutput(3, true);
-			controlBoard.setOutput(4, true);
-			controlBoard.setOutput(5, true);
-			controlBoard.setOutput(6, true);
-			controlBoard.setOutput(7, true);
-			controlBoard.setOutput(8, true);
-			controlBoard.setOutput(9, true);
-			controlBoard.setOutput(10, true);
-			controlBoard.setOutput(11, true);
-			controlBoard.setOutput(12, true);
+		if (limitSwtich.get()) {
+			controlBoard.setOutputs(0b0);
+		} else {
+			controlBoard.setOutputs(0b111111111111);
 		}
 	}
 
@@ -102,7 +89,6 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 				elevator.setPosition(i);
 			}
 		}
-
 	}
 
 	/**
@@ -111,7 +97,7 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	boolean canThrow;
 
 	void armControl() {
-		if (controlBoard.getBoardButton(6).get()&&canThrow) {
+		if (controlBoard.getBoardButton(6).get() && canThrow) {
 
 			if (isOpen) {
 				setArm(true);
@@ -123,52 +109,43 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 			isOpen = !isOpen;
 			canThrow = false;
 
-		} else if(!controlBoard.getBoardButton(6).get()) {
+		} else if (!controlBoard.getBoardButton(6).get()) {
 			canThrow = true;
 		}
-		
 
 	}
 
 	/**
 	 * This function is called periodically during autonomous
 	 */
-	public void autonomousPeriodic() {
-
-		int distance = 1;
-
-		setArm(true);
-		trikeDrive.moveAuto(2);
-		setArm(false);
-		trikeDrive.moveAuto(distance);
-		setArm(true);
-		trikeDrive.moveAuto(-8);
-		trikeDrive.turn180();
-		trikeDrive.moveAuto(distance - 8);
-		trikeDrive.turn90Right();
-		trikeDrive.moveAuto(3);
-		setArm(false);
-		trikeDrive.turn90Right();
-		trikeDrive.moveAuto(distance);
-		setArm(true);
-
+	public void autonomousInit() {
+		TrikeEncoder.startTime = System.nanoTime();
+		
+		trikeDrive.resetEncoders();
+		trikeDrive.DriveAutonomous(5f, (float)SmartDashboard.getNumber("Set Speed"));
 	}
-
-	boolean stopLoop;
 	
-	 void setArm(boolean state) {
+	public void autonomousPeriodic()
+	{
+		
+	}
+	
+	boolean stopLoop;
+
+	void setArm(boolean state) {
 		try {
 
 			if (state) {
 				trike.arm.set(Value.kReverse);
-				Thread.sleep(500);
-				trike.arm.set(Value.kOff);
+				Thread.sleep(500); // won't this stop controlling?
+				trike.arm.set(Value.kOff);// Should we make a new Thread?
 			} else {
 				trike.arm.set(Value.kForward);
 				Thread.sleep(500);
 				trike.arm.set(Value.kOff);
 
 			}
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -179,8 +156,11 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	/**
 	 * This function is called periodically during test mode
 	 */
-	public void testPeriodic() {
+	int i = 0;
 
+	public void testPeriodic() 
+	{
+		
 	}
 
 }

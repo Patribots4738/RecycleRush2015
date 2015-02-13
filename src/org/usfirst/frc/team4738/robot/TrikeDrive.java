@@ -1,16 +1,23 @@
 package org.usfirst.frc.team4738.robot;
 
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.VictorSP;
 
 /**
  * @author PatriBots4738 The Drive Class for the Patribots 2015 Robot
  */
 public class TrikeDrive implements SideCarConstants {
 
-	Talon leftMotor, rightMotor;
-	Encoder leftEncoder, rightEncoder;
+	public VictorSP leftMotor, rightMotor;
+	public TrikeEncoder leftEncoder = new TrikeEncoder(DIO_PORT[0],
+			DIO_PORT[1], false, EncodingType.k4X, 7.65);
+	public TrikeEncoder rightEncoder = new TrikeEncoder(DIO_PORT[3],
+			DIO_PORT[2], false, EncodingType.k4X, 7.65){{}};
 	Joystick leftStick, rightStick;
-	EncoderDecoder encoderDecoder = new EncoderDecoder();
+
+	final double ROTATION_DIAMETER = 22.625;
 
 	/**
 	 * Robot control for the 2015 Recycle Rush Robot
@@ -27,8 +34,8 @@ public class TrikeDrive implements SideCarConstants {
 	TrikeDrive(int leftMotor, int rightMotor, Joystick leftStick,
 			Joystick rightStick) {
 
-		this.leftMotor = new Talon(PWM_PORT[leftMotor]);
-		this.rightMotor = new Talon(PWM_PORT[rightMotor]);
+		this.leftMotor = new VictorSP(PWM_PORT[leftMotor]);
+		this.rightMotor = new VictorSP(PWM_PORT[rightMotor]);
 		this.leftStick = leftStick;
 		this.rightStick = rightStick;
 
@@ -36,128 +43,50 @@ public class TrikeDrive implements SideCarConstants {
 
 	private float DEAD_ZONE = .3f;
 
+	public void writeEncoderData() {
+		SmartDashboard.putNumber("Right Encoder:Feet", rightEncoder.getDistance());
+		SmartDashboard.putNumber("Left Encoder:Feet", leftEncoder.getDistance());
+		SmartDashboard.putNumber("Right Encoder:Rotations", rightEncoder.getRotations());
+		SmartDashboard.putNumber("Left Encoder:Rotations", leftEncoder.getRotations());
+		SmartDashboard.putNumber("Right Encoder:Raw", rightEncoder.get());
+		SmartDashboard.putNumber("Left Encoder:Raw", leftEncoder.get());
+		SmartDashboard.putNumber("Right Encoder:Speed", rightEncoder.getRate());
+		SmartDashboard.putNumber("Left Encoder:Speed", leftEncoder.getRate());
+		SmartDashboard.putNumber("Time Elapsed", leftEncoder.getTime());
+		}
+
 	/**
 	 * Player control for the robot
 	 */
 	public void player() {
+		player(1);
+	}
+
+	public void player(float speed) {
 
 		if (Math.abs(leftStick.getY()) >= DEAD_ZONE) {
-			leftMotor.set(-leftStick.getY());
+			leftMotor.set(leftStick.getY() * speed);
 		} else {
 			leftMotor.set(0);
 
 		}
 
 		if (Math.abs(rightStick.getY()) >= DEAD_ZONE) {
-			rightMotor.set(-rightStick.getY());
+			rightMotor.set(-rightStick.getY() * speed);
 		} else {
 			rightMotor.set(0);
 
 		}
-
 	}
 
-	/**
-	 * The autonomous control for the robot
-	 * 
-	 * @param leftMotor
-	 *            The speed in which the left motor will move until stop is
-	 *            called
-	 * @param rightMotor
-	 *            The speed in which the right motor will move until stop is
-	 *            called
-	 */
-	public void autonomous(float leftMotor, float rightMotor) {
-		this.leftMotor.set(leftMotor);
-		this.rightMotor.set(rightMotor);
-	}
-
-	public void moveAuto(double distance) {
-		leftEncoder.reset();
-		while (leftEncoder.get() < encoderDecoder.getRotations(distance)) {
-			leftMotor.set(1);
-			rightMotor.set(1);
-		}
-		autonomous(false);
-	}
-
-	public void turn90Right() {
-		double turnDist = (Math.PI * encoderDecoder.RADIUS) / 2;
-		while (true) {
-			if (rightEncoder.get() < encoderDecoder.getRotations(turnDist)) {
-				rightMotor.set(-1);
-			} else {
-				rightMotor.set(0);
-			}
-			if (leftEncoder.get() < encoderDecoder.getRotations(turnDist)) {
-
-				leftMotor.set(1);
-			} else {
-				leftMotor.set(0);
-			}
-			if (leftEncoder.get() < encoderDecoder.getRotations(turnDist)
-					&& rightEncoder.get() < encoderDecoder
-							.getRotations(turnDist)) {
-				break;
-			}
-		}
-	}
-
-	public void turn90Left() {
-		double turnDist = (Math.PI * encoderDecoder.RADIUS) / 2;
-		while (true) {
-			if (rightEncoder.get() < encoderDecoder.getRotations(turnDist)) {
-				rightMotor.set(1);
-			} else {
-				rightMotor.set(0);
-			}
-			if (leftEncoder.get() < encoderDecoder.getRotations(turnDist)) {
-
-				leftMotor.set(-1);
-			} else {
-				leftMotor.set(0);
-			}
-			if (leftEncoder.get() < encoderDecoder.getRotations(turnDist)
-					&& rightEncoder.get() < encoderDecoder
-							.getRotations(turnDist)) {
-				break;
-			}
-		}
-	}
-
-	public void turn180() {
-		double turnDist = (Math.PI * encoderDecoder.RADIUS);
-		while (true) {
-			if (rightEncoder.get() < encoderDecoder.getRotations(turnDist)) {
-				rightMotor.set(-1);
-			} else {
-				rightMotor.set(0);
-			}
-			if (leftEncoder.get() < encoderDecoder.getRotations(turnDist)) {
-
-				leftMotor.set(1);
-			} else {
-				leftMotor.set(0);
-			}
-			if (leftEncoder.get() < encoderDecoder.getRotations(turnDist)
-					&& rightEncoder.get() < encoderDecoder
-							.getRotations(turnDist)) {
-				break;
-			}
-		}
-	}
-
-	/**
-	 * The Overload method for autonomous telling it to stop
-	 * 
-	 * @param stop
-	 *            That is all... Seriously
-	 */
-	public void autonomous(boolean stop) {
-		if (!stop) {
-			this.leftMotor.set(0);
-			this.rightMotor.set(0);
-		}
+	public void threeStepSpeedController(float button3Speed,
+			float button2Speed, float speedCap) {
+		if (rightStick.getRawButton(3) || leftStick.getRawButton(3))
+			player(button3Speed);
+		else if (rightStick.getRawButton(2) || leftStick.getRawButton(2))
+			player(button2Speed);
+		else
+			player(speedCap);
 	}
 
 	/**
@@ -168,6 +97,53 @@ public class TrikeDrive implements SideCarConstants {
 	 */
 	public void setDeadZone(float deadzone) {
 		DEAD_ZONE = deadzone;
+
+	}
+
+	public void DriveAutonomous(float feet, float speed) {
+		resetEncoders();
+		while (rightEncoder.getDistance() < feet) {
+			setMotors(speed);
+			writeEncoderData();
+		}
+		setMotors(0);
+
+	}
+
+	public void DriveAutonomous(float feet) {
+		DriveAutonomous(feet, 1);
+	}
+
+	void setMotors(double speed) {
+		writeEncoderData();
+		leftMotor.set(-speed);
+		rightMotor.set(speed);
+		
+	}
+
+	void resetEncoders() {
+		leftEncoder.reset();
+		rightEncoder.reset();
+	}
+
+	void rotate90left(double speed) {
+		resetEncoders();
+		double distance = (2 * Math.PI * (ROTATION_DIAMETER / 2)) / 4;
+
+		while (leftEncoder.getDistance() < distance) {
+			leftMotor.set(-speed);
+		}
+		leftMotor.set(0);
+	}
+
+	void rotate90right(double speed) {
+		resetEncoders();
+		double distance = (2 * Math.PI * (ROTATION_DIAMETER / 2)) / 4;
+
+		while (rightEncoder.getDistance() < distance) {
+			rightMotor.set(speed);
+		}
+		rightMotor.set(0);
 	}
 
 }

@@ -14,11 +14,11 @@ public class Trike implements SideCarConstants {
 
 	DoubleSolenoid arm = new DoubleSolenoid(PCM_PORT[0],PCM_PORT[1]);
 
-	DigitalInput elevatorTop = new DigitalInput(DIO_PORT[0]);
-	DigitalInput elevatorBottom = new DigitalInput(DIO_PORT[1]);
+	//DigitalInput elevatorTop = new DigitalInput(DIO_PORT[0]);
+	//DigitalInput elevatorBottom = new DigitalInput(DIO_PORT[1]);
 	
-	Encoder leftEncoder = new Encoder(DIO_PORT[2], DIO_PORT[3], true, EncodingType.k1X);
-	Encoder rigtEncoder = new Encoder(DIO_PORT[4], DIO_PORT[5], true, EncodingType.k1X);
+	//Encoder leftEncoder = new Encoder(DIO_PORT[2], DIO_PORT[3], true, EncodingType.k1X);
+	//Encoder rigtEncoder = new Encoder(DIO_PORT[4], DIO_PORT[5], true, EncodingType.k1X);
 	
 
 	//TODO: Load this array with all of the different arm heights.

@@ -13,19 +13,15 @@ public class Elevator implements SideCarConstants {
 	
 	Talon elevator;
 	Trike trike;
-	Encoder elevatorEncoder = new Encoder(DIO_PORT[6], DIO_PORT[7], true, EncodingType.k1X);
+	TrikeEncoder elevatorEncoder = new TrikeEncoder(DIO_PORT[4], DIO_PORT[5], true, EncodingType.k1X,4);
 
 	
 	private int currentPos;
 	
-	
-	
 	public Elevator(int port, Trike trike) {
 		elevator= new Talon(port);
 		this.trike = trike;
-	}
-
-	
+	}	
 	
 	private void setPosition(){
 	
@@ -50,12 +46,12 @@ public class Elevator implements SideCarConstants {
 	
 	}
 	
-	public void initEncoder(){
+	/*public void initEncoder(){
 		while(!trike.elevatorBottom.get()){
 		elevator.set(.5);
 		}
 		elevatorEncoder.reset();
-	}
+	}*/
 	
 	
 	public void Update(){	

@@ -3,6 +3,7 @@ package org.usfirst.frc.team4738.robot;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
@@ -11,10 +12,8 @@ import edu.wpi.first.wpilibj.VictorSP;
 public class TrikeDrive implements SideCarConstants {
 
 	public VictorSP leftMotor, rightMotor;
-	public TrikeEncoder leftEncoder = new TrikeEncoder(DIO_PORT[0],
-			DIO_PORT[1], false, EncodingType.k4X, 7.65);
-	public TrikeEncoder rightEncoder = new TrikeEncoder(DIO_PORT[3],
-			DIO_PORT[2], false, EncodingType.k4X, 7.65){{}};
+	public TrikeEncoder leftEncoder;
+	public TrikeEncoder rightEncoder ;
 	Joystick leftStick, rightStick;
 
 	final double ROTATION_DIAMETER = 22.625;
@@ -38,22 +37,32 @@ public class TrikeDrive implements SideCarConstants {
 		this.rightMotor = new VictorSP(PWM_PORT[rightMotor]);
 		this.leftStick = leftStick;
 		this.rightStick = rightStick;
-
+		rightEncoder = new TrikeEncoder(DIO_PORT[0],
+				DIO_PORT[1], false, EncodingType.k4X, 7.65, this.rightMotor);
+		leftEncoder =   new TrikeEncoder(DIO_PORT[3],
+				DIO_PORT[2], false, EncodingType.k4X, 7.65, this.leftMotor);
+		
 	}
 
 	private float DEAD_ZONE = .3f;
+	private int i = 0;
 
 	public void writeEncoderData() {
-		SmartDashboard.putNumber("Right Encoder:Feet", rightEncoder.getDistance());
-		SmartDashboard.putNumber("Left Encoder:Feet", leftEncoder.getDistance());
-		SmartDashboard.putNumber("Right Encoder:Rotations", rightEncoder.getRotations());
-		SmartDashboard.putNumber("Left Encoder:Rotations", leftEncoder.getRotations());
+		SmartDashboard.putNumber("Right Encoder:Feet",
+				rightEncoder.getDistance());
+		SmartDashboard
+				.putNumber("Left Encoder:Feet", leftEncoder.getDistance());
+		SmartDashboard.putNumber("Right Encoder:Rotations",
+				rightEncoder.getRotations());
+		SmartDashboard.putNumber("Left Encoder:Rotations",
+				leftEncoder.getRotations());
 		SmartDashboard.putNumber("Right Encoder:Raw", rightEncoder.get());
 		SmartDashboard.putNumber("Left Encoder:Raw", leftEncoder.get());
 		SmartDashboard.putNumber("Right Encoder:Speed", rightEncoder.getRate());
 		SmartDashboard.putNumber("Left Encoder:Speed", leftEncoder.getRate());
-		SmartDashboard.putNumber("Time Elapsed", leftEncoder.getTime());
-		}
+		SmartDashboard.putNumber("Time Elapsed", Utils.getTime());
+
+	}
 
 	/**
 	 * Player control for the robot
@@ -65,20 +74,25 @@ public class TrikeDrive implements SideCarConstants {
 	public void player(float speed) {
 
 		if (Math.abs(leftStick.getY()) >= DEAD_ZONE) {
-			leftMotor.set(leftStick.getY() * speed);
+			leftEncoder.PID.setSpeed(leftStick.getY() * speed);
 		} else {
-			leftMotor.set(0);
+			leftEncoder.PID.setSpeed(0);
 
 		}
 
 		if (Math.abs(rightStick.getY()) >= DEAD_ZONE) {
-			rightMotor.set(-rightStick.getY() * speed);
+			rightEncoder.PID.setSpeed(-rightStick.getY() * speed);
 		} else {
-			rightMotor.set(0);
-
+			rightEncoder.PID.setSpeed(0);
 		}
 	}
-
+	
+	public void playerArcade()
+	{
+		leftEncoder.PID.setSpeed(-(leftStick.getY() * leftStick.getX()));
+		rightEncoder.PID.setSpeed(leftStick.getY() * leftStick.getX());
+	}
+	
 	public void threeStepSpeedController(float button3Speed,
 			float button2Speed, float speedCap) {
 		if (rightStick.getRawButton(3) || leftStick.getRawButton(3))
@@ -101,6 +115,7 @@ public class TrikeDrive implements SideCarConstants {
 	}
 
 	public void DriveAutonomous(float feet, float speed) {
+		
 		resetEncoders();
 		while (rightEncoder.getDistance() < feet) {
 			setMotors(speed);
@@ -114,11 +129,21 @@ public class TrikeDrive implements SideCarConstants {
 		DriveAutonomous(feet, 1);
 	}
 
+	PIDController PIDc;
 	void setMotors(double speed) {
 		writeEncoderData();
-		leftMotor.set(-speed);
-		rightMotor.set(speed);
 		
+		leftEncoder.PID.setSpeed(-speed);
+		rightEncoder.PID.setSpeed(speed);
+
+	}
+
+	// THIS IS IN FEET PER SECOND
+	void setMotorsFps(double speed) {
+		writeEncoderData();
+		leftEncoder.PID.setSpeedFPS(-speed);
+		rightEncoder.PID.setSpeedFPS(speed);
+
 	}
 
 	void resetEncoders() {

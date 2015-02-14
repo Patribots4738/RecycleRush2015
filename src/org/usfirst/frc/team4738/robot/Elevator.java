@@ -12,32 +12,49 @@ import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 public class Elevator implements SideCarConstants {
 	
 	Talon elevator;
-	Trike trike;
-	TrikeEncoder elevatorEncoder = new TrikeEncoder(DIO_PORT[4], DIO_PORT[5], true, EncodingType.k1X,4);
+	
+	ElevatorEncoder encoder = new ElevatorEncoder(DIO_PORT[4], DIO_PORT[5], true, EncodingType.k1X,3.25);
+	DoubleSolenoid arm = new DoubleSolenoid(PCM_PORT[0],PCM_PORT[1]);
 
+	DigitalInput elevatorTop = new DigitalInput(DIO_PORT[7]);
+	DigitalInput elevatorBottom = new DigitalInput(DIO_PORT[8]);
+	
+	final int[] armState = {0};
+	
+	 private double deadBand = .2;
+	
+	
+	private double speedCap =.75; 
 	
 	private int currentPos;
 	
-	public Elevator(int port, Trike trike) {
+	private final double elevatorHeight=5;
+	
+	public double Kp= 1/elevatorHeight;
+	
+	public Elevator(int port) {
 		elevator= new Talon(port);
-		this.trike = trike;
+	
 	}	
+	
+	
 	
 	private void setPosition(){
 	
-
-		if(elevatorEncoder.get()>trike.armState[currentPos]){
-			elevator.set(-1);
-		} else if(elevatorEncoder.get()<trike.armState[currentPos]){
-			elevator.set(1);
-
-		}else{
-			elevator.set(0);
+		if(elevatorBottom.get()){
+			encoder.reset();
 		}
-		
+
+		if(getEt()>deadBand){
+		elevator.set(Kp*getEt()*speedCap);
+		}
 	
 	}
 
+	private double getEt(){
+		return armState[currentPos]-encoder.getDistance();
+	}
+	
 	public void setPosition(int curPos){
 	
 		currentPos = curPos;
@@ -46,13 +63,17 @@ public class Elevator implements SideCarConstants {
 	
 	}
 	
-	/*public void initEncoder(){
-		while(!trike.elevatorBottom.get()){
-		elevator.set(.5);
-		}
-		elevatorEncoder.reset();
-	}*/
 	
+	
+
+	public void setDeadBand(double deadBand){
+		this.deadBand= deadBand;
+		
+	}
+	
+	public double getNormalizeSpeedCap(){
+		return  encoder.CIRCUMFERENCE;
+	}
 	
 	public void Update(){	
 		

@@ -17,16 +17,15 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class Robot extends IterativeRobot implements SideCarConstants {
 
-	Trike trike = new Trike();
+
 
 	Joystick leftStick = new Joystick(DRIVER_STATION_PORT[0]);
 	Joystick rightStick = new Joystick(DRIVER_STATION_PORT[1]);
 	ControlBoard controlBoard = new ControlBoard(DRIVER_STATION_PORT[2], 10);
 
-	TrikeDrive trikeDrive = new TrikeDrive(PWM_PORT[1], PWM_PORT[2], leftStick,
-			rightStick);
+	TrikeDrive trikeDrive ;
 
-	Elevator elevator = new Elevator(PWM_PORT[0], trike);
+	Elevator elevator = new Elevator(PWM_PORT[0]);
 
 	boolean isOpen = true;
 
@@ -37,7 +36,9 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	Camera camera;
 
 	public void robotInit() {
-
+		SmartDashboard.putNumber("Set Kp",0);
+		trikeDrive =new TrikeDrive(PWM_PORT[1], PWM_PORT[2], leftStick,
+				rightStick);
 		controlBoard.setOutputs(0);
 
 		camera = new Camera();
@@ -48,6 +49,8 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 		SmartDashboard.putNumber("Set Speed", 1f);
 		
 		trikeDrive.resetEncoders();
+		
+	
 		
 		// elevator.initEncoder();
 
@@ -60,6 +63,11 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 
 	DigitalInput limitSwtich = new DigitalInput(DIO_PORT[8]);
 	
+	
+	public void teleopInit(){
+		trikeDrive.resetEncoders();
+		
+	}
 	/**
 	 * This function is called periodically during operator control
 	 */
@@ -119,15 +127,16 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 	 * This function is called periodically during autonomous
 	 */
 	public void autonomousInit() {
-		TrikeEncoder.startTime = System.nanoTime();
-		
+		Utils.startTime = System.nanoTime();
+		//trikeDrive.leftEncoder.setKp();
+		//trikeDrive.rightEncoder.setKp();
 		trikeDrive.resetEncoders();
-		trikeDrive.DriveAutonomous(5f, (float)SmartDashboard.getNumber("Set Speed"));
+		trikeDrive.DriveAutonomous(5f, .25f);
 	}
 	
 	public void autonomousPeriodic()
 	{
-		
+	
 	}
 	
 	boolean stopLoop;
@@ -136,13 +145,13 @@ public class Robot extends IterativeRobot implements SideCarConstants {
 		try {
 
 			if (state) {
-				trike.arm.set(Value.kReverse);
-				Thread.sleep(500); // won't this stop controlling?
-				trike.arm.set(Value.kOff);// Should we make a new Thread?
+				elevator.arm.set(Value.kReverse);
+			//	Thread.sleep(500); // won't this stop drive?
+				elevator.arm.set(Value.kOff);// Should we make a new Thread?
 			} else {
-				trike.arm.set(Value.kForward);
-				Thread.sleep(500);
-				trike.arm.set(Value.kOff);
+				elevator.arm.set(Value.kForward);
+			//	Thread.sleep(500);
+				elevator.arm.set(Value.kOff);
 
 			}
 			Thread.sleep(1000);

@@ -10,12 +10,11 @@ public class ControlBoard extends Joystick {
 
 	public ControlBoard(int port, int buttonCount) {
 		super(port);
-
+		
 		buttons = new JoystickButton[buttonCount];
 
 		for (int i = 0; i < buttonCount; i++) {
 			buttons[i] = new JoystickButton(this, i);
-
 		}
 	}
 	

@@ -2,21 +2,13 @@ package org.usfirst.frc.team4738.robot;
 
 public class TrikeTimer {
 
-	private double startTime,deltaTime =0;
-	
-	
-	public TrikeTimer (){
-		
-		
-	}
+	private double startTime, deltaTime = 0;
 	
 	public void start(){
-		startTime = System.nanoTime();
-		
-		
+		startTime = System.nanoTime();	
 	}
 	public double get(){
-	return	(System.nanoTime()-startTime)/1000000;
+		return	(System.nanoTime()-startTime)/1000000;
 	}
 	
 	public double Lap(){
@@ -27,5 +19,15 @@ public class TrikeTimer {
 	
 	public void reset(){
 		startTime = System.nanoTime();
+	}
+	
+	public void waitMill(double mill)
+	{
+		reset();
+		start();
+		while(get() < mill)
+		{
+			
+		}
 	}
 }

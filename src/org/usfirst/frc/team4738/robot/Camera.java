@@ -7,8 +7,8 @@ public class Camera {
 
 	Camera() {
 		server = CameraServer.getInstance();
-		server.setQuality(7);
-		server.startAutomaticCapture("cam0");
+		server.setQuality(50); //7 percent
+		server.startAutomaticCapture("cam1");
 
 	}
 }

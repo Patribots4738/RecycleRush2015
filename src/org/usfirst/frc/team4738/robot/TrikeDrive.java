@@ -48,10 +48,10 @@ public class TrikeDrive implements SideCarConstants {
 	public void writeEncoderData() {
 		SmartDashboard.putNumber("Right Encoder:Feet", rightEncoder.getDistance());
 		SmartDashboard.putNumber("Left Encoder:Feet", leftEncoder.getDistance());
-		SmartDashboard.putNumber("Right Encoder:Rotations", rightEncoder.getRotations());
+		/*SmartDashboard.putNumber("Right Encoder:Rotations", rightEncoder.getRotations());
 		SmartDashboard.putNumber("Left Encoder:Rotations", leftEncoder.getRotations());
 		SmartDashboard.putNumber("Right Encoder:Raw", rightEncoder.get());
-		SmartDashboard.putNumber("Left Encoder:Raw", leftEncoder.get());
+		SmartDashboard.putNumber("Left Encoder:Raw", leftEncoder.get());	*/
 		SmartDashboard.putNumber("Right Encoder:Speed", rightEncoder.getRate());
 		SmartDashboard.putNumber("Left Encoder:Speed", leftEncoder.getRate());
 	}
@@ -66,9 +66,54 @@ public class TrikeDrive implements SideCarConstants {
 	double threshold = .3;
 
 	public void player(float speed) {
-			leftMotor.set(leftStick.getY() * speed);
-			rightMotor.set(-rightStick.getY() * speed);
+		if(Math.abs(leftStick.getY())>.1)
+			leftMotor.set(-leftStick.getY() * speed);
+		if(Math.abs(rightStick.getY())>.1)
+			rightMotor.set(rightStick.getY() * speed);
 	}
+	
+	public void arcadePlayer(double moveValue, double rotateValue)
+	{
+		double leftMotorSpeed;
+		double rightMotorSpeed;
+		
+		moveValue = Utils.limit(moveValue, 1);
+		rotateValue = Utils.limit(rotateValue, 1);
+		
+		if(moveValue >= 0.0)
+		{
+			if(rotateValue >= 0.0){
+				rightMotorSpeed = moveValue - rotateValue;
+				leftMotorSpeed = Math.max(moveValue, rotateValue);
+			} else {
+				leftMotorSpeed = Math.max(moveValue, -rotateValue);
+				rightMotorSpeed = moveValue + rotateValue;
+			}
+		}
+		else
+		{
+			if(rotateValue > 0.0){
+				leftMotorSpeed = -Math.max(-moveValue, rotateValue);
+				rightMotorSpeed = moveValue + rotateValue;
+			} else {
+				leftMotorSpeed = moveValue - rotateValue;
+				rightMotorSpeed = -Math.max(-moveValue, -rotateValue);
+			}
+		}
+		leftMotor.set(leftMotorSpeed);
+		rightMotor.set(rightMotorSpeed);
+	}
+	
+	public void threeStepSpeedController(float button3Speed, float button2Speed, float speedCap, boolean arcadeDrive)
+	{
+		if (rightStick.getRawButton(3) || leftStick.getRawButton(3))
+			arcadePlayer(leftStick.getX() * button3Speed, leftStick.getY() * button3Speed);
+		else if (rightStick.getRawButton(2) || leftStick.getRawButton(2))
+			arcadePlayer(leftStick.getX() * button2Speed, leftStick.getY() * button2Speed);
+		else
+			arcadePlayer(leftStick.getX() * speedCap, leftStick.getY() * speedCap);
+	}
+
 
 	public void threeStepSpeedController(float button3Speed, float button2Speed, float speedCap) {
 		if (rightStick.getRawButton(3) || leftStick.getRawButton(3))

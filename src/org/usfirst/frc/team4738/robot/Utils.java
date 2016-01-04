@@ -4,7 +4,7 @@ public class Utils {
 	
 	public static double limit(double value, double high)
 	{
-		if(value > Math.abs(high))
+		if(Math.abs(value) > high)
 		{
 			return high;
 		}

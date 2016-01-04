@@ -38,7 +38,7 @@ public class TrikeDrive implements SideCarConstants {
 
 		this.leftStick = leftStick;
 		this.rightStick = rightStick;
-
+		
 		rightEncoder = new TrikeEncoder(DIO_PORT[1], DIO_PORT[0], false,
 					EncodingType.k4X, 7.65, this.rightMotor);
 		leftEncoder = new TrikeEncoder(DIO_PORT[3], DIO_PORT[2], false,
@@ -72,53 +72,27 @@ public class TrikeDrive implements SideCarConstants {
 			rightMotor.set(rightStick.getY() * speed);
 	}
 	
-	public void arcadePlayer(double moveValue, double rotateValue)
+	public void arcadePlayer(double x, double y)
 	{
-		double leftMotorSpeed;
-		double rightMotorSpeed;
-		
-		moveValue = Utils.limit(moveValue, 1);
-		rotateValue = Utils.limit(rotateValue, 1);
-		
-		if(moveValue >= 0.0)
-		{
-			if(rotateValue >= 0.0){
-				rightMotorSpeed = moveValue - rotateValue;
-				leftMotorSpeed = Math.max(moveValue, rotateValue);
-			} else {
-				leftMotorSpeed = Math.max(moveValue, -rotateValue);
-				rightMotorSpeed = moveValue + rotateValue;
-			}
-		}
-		else
-		{
-			if(rotateValue > 0.0){
-				leftMotorSpeed = -Math.max(-moveValue, rotateValue);
-				rightMotorSpeed = moveValue + rotateValue;
-			} else {
-				leftMotorSpeed = moveValue - rotateValue;
-				rightMotorSpeed = -Math.max(-moveValue, -rotateValue);
-			}
-		}
-		leftMotor.set(leftMotorSpeed);
-		rightMotor.set(rightMotorSpeed);
+		leftMotor.set(x + y);
+		rightMotor.set(-x + y);
 	}
 	
 	public void threeStepSpeedController(float button3Speed, float button2Speed, float speedCap, boolean arcadeDrive)
 	{
-		if (rightStick.getRawButton(3) || leftStick.getRawButton(3))
-			arcadePlayer(leftStick.getX() * button3Speed, leftStick.getY() * button3Speed);
-		else if (rightStick.getRawButton(2) || leftStick.getRawButton(2))
-			arcadePlayer(leftStick.getX() * button2Speed, leftStick.getY() * button2Speed);
+		if (rightStick.getRawButton(1))
+			arcadePlayer(-leftStick.getY() * button3Speed, leftStick.getX() * button3Speed);
+		else if (rightStick.getRawButton(3))
+			arcadePlayer(-leftStick.getY() * button2Speed, leftStick.getX() * button2Speed);
 		else
-			arcadePlayer(leftStick.getX() * speedCap, leftStick.getY() * speedCap);
+			arcadePlayer(-leftStick.getY() * speedCap, leftStick.getX() * speedCap);
 	}
 
 
 	public void threeStepSpeedController(float button3Speed, float button2Speed, float speedCap) {
-		if (rightStick.getRawButton(3) || leftStick.getRawButton(3))
+		if (leftStick.getRawButton(3))
 			player(button3Speed);
-		else if (rightStick.getRawButton(2) || leftStick.getRawButton(2))
+		else if (leftStick.getRawButton(2))
 			player(button2Speed);
 		else
 			player(speedCap);

@@ -107,7 +107,6 @@ public class Elevator implements SideCarConstants {
 
 	// Updates the arm position every 20ms
 	public void Update() {
-		writeData();
 		setPosition();
 	}
 
